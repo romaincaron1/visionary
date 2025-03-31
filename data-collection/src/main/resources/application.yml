@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name:
+  # Datasource Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/visionary
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+# Discovery Client
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# Datasources
+datasources:
+  sources:
+    anilist:
+      url: https://graphql.anilist.co
+      api-key:
+      timeout: 5000
