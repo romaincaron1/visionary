@@ -1,7 +1,7 @@
 package com.romaincaron.data_collection.dto;
 
-import com.romaincaron.data_collection.entity.enums.MediaStatus;
-import com.romaincaron.data_collection.entity.enums.MediaType;
+import com.romaincaron.data_collection.enums.MediaStatus;
+import com.romaincaron.data_collection.enums.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

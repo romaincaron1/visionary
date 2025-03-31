@@ -3,7 +3,7 @@ package com.romaincaron.data_collection.service.synchronization;
 import com.romaincaron.data_collection.dto.MediaData;
 import com.romaincaron.data_collection.dto.SyncResult;
 import com.romaincaron.data_collection.entity.Media;
-import com.romaincaron.data_collection.entity.enums.MediaType;
+import com.romaincaron.data_collection.enums.MediaType;
 import com.romaincaron.data_collection.service.datasource.DataSource;
 import com.romaincaron.data_collection.service.datasource.DataSourceManager;
 import com.romaincaron.data_collection.service.entity.MediaService;

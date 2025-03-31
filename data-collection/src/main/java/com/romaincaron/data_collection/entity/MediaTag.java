@@ -1,7 +1,7 @@
 package com.romaincaron.data_collection.entity;
 
 import com.romaincaron.data_collection.entity.embeddable.MediaTagId;
-import com.romaincaron.data_collection.entity.enums.ConfidenceLevel;
+import com.romaincaron.data_collection.enums.ConfidenceLevel;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,8 +1,8 @@
 package com.romaincaron.data_collection.mapper;
 
 import com.romaincaron.data_collection.dto.MediaData;
-import com.romaincaron.data_collection.entity.enums.MediaStatus;
-import com.romaincaron.data_collection.entity.enums.MediaType;
+import com.romaincaron.data_collection.enums.MediaStatus;
+import com.romaincaron.data_collection.enums.MediaType;
 
 import java.util.HashSet;
 import java.util.List;

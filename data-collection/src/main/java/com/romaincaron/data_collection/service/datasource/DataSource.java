@@ -1,7 +1,7 @@
 package com.romaincaron.data_collection.service.datasource;
 
 import com.romaincaron.data_collection.dto.MediaData;
-import com.romaincaron.data_collection.entity.enums.MediaType;
+import com.romaincaron.data_collection.enums.MediaType;
 
 import java.util.List;
 import java.util.Optional;

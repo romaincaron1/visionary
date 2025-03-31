@@ -1,4 +1,4 @@
-package com.romaincaron.data_collection.entity.enums;
+package com.romaincaron.data_collection.enums;
 
 public enum MediaType {
     MANGA,
