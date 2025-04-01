@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: analyze
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: romaincaron1
 
 eureka:
   client:

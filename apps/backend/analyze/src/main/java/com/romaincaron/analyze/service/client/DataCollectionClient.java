@@ -2,7 +2,7 @@ package com.romaincaron.analyze.service.client;
 
 import com.romaincaron.analyze.dto.MediaDto;
 import com.romaincaron.analyze.dto.MediaVectorDto;
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
