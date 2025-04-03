@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name:
+    name: data-collection
   # Datasource Configuration
   datasource:
     url: jdbc:postgresql://localhost:5432/visionary

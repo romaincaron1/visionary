@@ -1,5 +1,6 @@
 package com.romaincaron.data_collection.service.entity;
 
+import com.romaincaron.data_collection.dto.MediaDto;
 import com.romaincaron.data_collection.entity.Media;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -11,23 +12,23 @@ public interface MediaService {
     /**
      * Find the media by its ID
      * @param id the media ID
-     * @return Media entity
+     * @return MediaDto object
      * @throws EntityNotFoundException if no media is found with the given ID
      */
-    Media findById(Long id);
+    MediaDto findById(Long id);
 
     /**
      * Find all medias
-     * @return List<Media>
+     * @return List<MediaDto>
      */
-    List<Media> findAll();
+    List<MediaDto> findAll();
 
     /**
      * Save a media
-     * @param media
-     * @return Media
+     * @param mediaDTO
+     * @return MediaDto
      */
-    Media save(Media media);
+    MediaDto save(MediaDto mediaDTO);
 
     /**
      * Delete a media with its ID
@@ -39,7 +40,15 @@ public interface MediaService {
      * Find a media by its external ID and a source name
      * @param externalId
      * @param sourceName
-     * @return Optional<Media>
+     * @return Optional<MediaDto>
      */
-    Optional<Media> findByExternalIdAndSourceName(String externalId, String sourceName);
+    Optional<MediaDto> findByExternalIdAndSourceName(String externalId, String sourceName);
+
+    /**
+     * Get the Media entity by ID - for internal use
+     * @param id the media ID
+     * @return Media entity
+     * @throws EntityNotFoundException if no media is found with the given ID
+     */
+    Media getEntityById(Long id);
 }

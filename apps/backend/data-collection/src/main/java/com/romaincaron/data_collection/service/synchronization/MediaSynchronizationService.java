@@ -1,9 +1,11 @@
 package com.romaincaron.data_collection.service.synchronization;
 
 import com.romaincaron.data_collection.dto.MediaData;
+import com.romaincaron.data_collection.dto.MediaDto;
 import com.romaincaron.data_collection.dto.SyncResult;
 import com.romaincaron.data_collection.entity.Media;
 import com.romaincaron.data_collection.enums.MediaType;
+import com.romaincaron.data_collection.mapper.MediaMapper;
 import com.romaincaron.data_collection.service.datasource.DataSource;
 import com.romaincaron.data_collection.service.datasource.DataSourceManager;
 import com.romaincaron.data_collection.service.entity.MediaService;
@@ -81,11 +83,12 @@ public class MediaSynchronizationService {
      */
     @Transactional(Transactional.TxType.REQUIRED)
     public boolean syncMediaData(MediaData mediaData) {
-        Optional<Media> existingMediaOpt = mediaService.findByExternalIdAndSourceName(
+        Optional<MediaDto> existingMediaDtoOpt = mediaService.findByExternalIdAndSourceName(
                 mediaData.getExternalId(), mediaData.getSourceName());
 
-        if (existingMediaOpt.isPresent()) {
-            Media media = existingMediaOpt.get();
+        if (existingMediaDtoOpt.isPresent()) {
+            MediaDto mediaDto = existingMediaDtoOpt.get();
+            Media media = mediaService.getEntityById(mediaDto.getId());
             syncMediaProperties(media, mediaData);
             return false; // Update
         } else {
@@ -109,7 +112,9 @@ public class MediaSynchronizationService {
         // First save the media to get an ID
         if (media.getId() == null) {
             try {
-                media = mediaService.save(media);
+                MediaDto mediaDto = MediaMapper.toDto(media);
+                mediaDto = mediaService.save(mediaDto);
+                media = mediaService.getEntityById(mediaDto.getId());
             } catch (Exception e) {
                 log.error("Failed to save media entity: {}", e.getMessage());
                 throw e; // Re-throw to trigger transaction rollback for this specific media
@@ -123,7 +128,9 @@ public class MediaSynchronizationService {
             media.getGenres().addAll(genreService.syncGenres(mediaData.getGenres() != null ?
                     mediaData.getGenres() : Set.of()));
 
-            media = mediaService.save(media);
+            MediaDto mediaDto = MediaMapper.toDto(media);
+            mediaDto = mediaService.save(mediaDto);
+            media = mediaService.getEntityById(mediaDto.getId());
 
             // Handle tags
             media.getMediaTags().clear();
@@ -131,7 +138,9 @@ public class MediaSynchronizationService {
                 media.getMediaTags().addAll(tagService.createMediaTags(mediaData.getTags(), media));
             }
 
-            return mediaService.save(media);
+            mediaDto = MediaMapper.toDto(media);
+            mediaDto = mediaService.save(mediaDto);
+            return mediaService.getEntityById(mediaDto.getId());
         } catch (Exception e) {
             log.error("Failed to save media relationships: {}", e.getMessage());
             throw e; // Re-throw to trigger transaction rollback for this specific media

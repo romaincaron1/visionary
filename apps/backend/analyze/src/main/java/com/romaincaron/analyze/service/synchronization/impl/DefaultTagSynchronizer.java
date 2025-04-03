@@ -1,11 +1,11 @@
 package com.romaincaron.analyze.service.synchronization.impl;
 
 import com.romaincaron.analyze.dto.MediaDto;
+import com.romaincaron.analyze.dto.MediaTagDto;
 import com.romaincaron.analyze.entity.MediaNode;
 import com.romaincaron.analyze.entity.TagNode;
 import com.romaincaron.analyze.entity.relationships.TagRelationship;
 import com.romaincaron.analyze.service.entity.TagNodeService;
-import com.romaincaron.analyze.service.synchronization.ConfidenceLevelEvaluator;
 import com.romaincaron.analyze.service.synchronization.TagSynchronizer;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,11 +22,10 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
     private static final Logger log = LoggerFactory.getLogger(DefaultTagSynchronizer.class);
 
     private final TagNodeService tagNodeService;
-    private final ConfidenceLevelEvaluator confidenceLevelEvaluator;
 
     @Override
     public void synchronize(MediaNode mediaNode, MediaDto mediaDto) {
-        if (mediaDto.getTags() == null || mediaDto.getTags().isEmpty()) {
+        if (mediaDto.getMediaTags() == null || mediaDto.getMediaTags().isEmpty()) {
             mediaNode.getTags().clear();
             return;
         }
@@ -34,8 +33,8 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
         Set<TagRelationship> currentRelationships = new HashSet<>(mediaNode.getTags());
         Set<TagRelationship> updatedRelationships = new HashSet<>();
 
-        for (MediaDto.TagDto tagDto : mediaDto.getTags()) {
-            TagNode tagNode = findOrCreateTag(tagDto.getName(), mediaDto.getSourceName());
+        for (MediaTagDto mediaTagDto : mediaDto.getMediaTags()) {
+            TagNode tagNode = findOrCreateTag(mediaTagDto.getTag().getName(), mediaDto.getSourceName());
 
             // Find if there's an existing relationship
             Optional<TagRelationship> existingRelOpt = findExistingTagRelationship(currentRelationships, tagNode);
@@ -43,7 +42,7 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
             if (existingRelOpt.isPresent()) {
                 // Update existing relationship
                 TagRelationship rel = existingRelOpt.get();
-                boolean changed = updateTagRelationship(rel, tagDto, mediaDto.getSourceName());
+                boolean changed = updateTagRelationship(rel, mediaTagDto, mediaDto.getSourceName());
 
                 if (changed) {
                     log.info("Updated tag relationship '{}' for '{}'",
@@ -53,10 +52,10 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
                 updatedRelationships.add(rel);
             } else {
                 // Create new relationship
-                TagRelationship newRel = createTagRelationship(tagNode, tagDto, mediaDto.getSourceName());
+                TagRelationship newRel = createTagRelationship(tagNode, mediaTagDto);
                 updatedRelationships.add(newRel);
-                log.info("Created new tag relationship '{}' for '{}' with relevance {}",
-                        tagNode.getName(), mediaNode.getTitle(), tagDto.getRelevance());
+                log.info("Created new tag relationship '{}' for '{}' with relevance {} and confidenceLevel {}",
+                        tagNode.getName(), mediaNode.getTitle(), mediaTagDto.getRelevance(), mediaTagDto.getConfidenceLevel());
             }
         }
 
@@ -86,11 +85,8 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
             TagNode newTag = new TagNode();
             newTag.setName(tagName);
             newTag.setSourceName(sourceName);
-            // Assuming you have a save method in the service
-            // If not, you'll need to add one
-            // TagNode savedTag = tagNodeService.save(newTag);
             log.info("Created new tag: {} (source: {})", tagName, sourceName);
-            return newTag; // or savedTag if you have the save method
+            return newTag;
         }
     }
 
@@ -103,19 +99,18 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
     }
 
     private boolean updateTagRelationship(
-            TagRelationship relationship, MediaDto.TagDto tagDto, String sourceName) {
+            TagRelationship relationship, MediaTagDto mediaTagDto, String sourceName) {
         boolean changed = false;
 
-        if (tagDto.getRelevance() != null
-                && !tagDto.getRelevance().equals(relationship.getRelevance())) {
-            relationship.setRelevance(tagDto.getRelevance());
+        if (mediaTagDto.getRelevance() != null
+                && !mediaTagDto.getRelevance().equals(relationship.getRelevance())) {
+            relationship.setRelevance(mediaTagDto.getRelevance());
             changed = true;
         }
 
-        String confidenceLevel = confidenceLevelEvaluator.evaluateConfidenceLevel(
-                sourceName, tagDto.getRelevance());
-        if (!confidenceLevel.equals(relationship.getConfidenceLevel())) {
-            relationship.setConfidenceLevel(confidenceLevel);
+        if (mediaTagDto.getConfidenceLevel() != null
+                && !mediaTagDto.getConfidenceLevel().equals(relationship.getConfidenceLevel())) {
+            relationship.setConfidenceLevel(mediaTagDto.getConfidenceLevel());
             changed = true;
         }
 
@@ -123,12 +118,11 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
     }
 
     private TagRelationship createTagRelationship(
-            TagNode tagNode, MediaDto.TagDto tagDto, String sourceName) {
+            TagNode tagNode, MediaTagDto mediaTagDto) {
         TagRelationship relationship = new TagRelationship();
         relationship.setTag(tagNode);
-        relationship.setRelevance(tagDto.getRelevance());
-        relationship.setConfidenceLevel(
-                confidenceLevelEvaluator.evaluateConfidenceLevel(sourceName, tagDto.getRelevance()));
+        relationship.setRelevance(mediaTagDto.getRelevance());
+        relationship.setConfidenceLevel(mediaTagDto.getConfidenceLevel());
         return relationship;
     }
 }

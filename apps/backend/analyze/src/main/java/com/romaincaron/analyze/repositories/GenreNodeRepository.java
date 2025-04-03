@@ -16,6 +16,6 @@ public interface GenreNodeRepository extends Neo4jRepository<GenreNode, Long> {
     Optional<GenreNode> findByName(String name);
 
     // Find medias with a specific genre
-    @Query("MATCH (g:Genre)<-[:HAS_GENRE]-(m:Media) WHERE g.name = $genreName RETURN m")
+    @Query("MATCH (g:GenreNode)<-[:HAS_GENRE]-(m:MediaNode) WHERE g.name = $genreName RETURN m")
     List<MediaNode> findMediaByGenre(String genreName);
 }

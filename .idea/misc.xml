@@ -7,6 +7,9 @@
         <option value="$PROJECT_DIR$/data-collection/pom.xml" />
         <option value="$PROJECT_DIR$/analyze/pom.xml" />
         <option value="$PROJECT_DIR$/eureka/pom.xml" />
+        <option value="$PROJECT_DIR$/apps/backend/eureka/pom.xml" />
+        <option value="$PROJECT_DIR$/apps/backend/analyze/pom.xml" />
+        <option value="$PROJECT_DIR$/apps/backend/data-collection/pom.xml" />
       </list>
     </option>
   </component>

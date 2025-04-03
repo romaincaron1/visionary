@@ -1,5 +1,6 @@
 package com.romaincaron.data_collection.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.romaincaron.data_collection.enums.MediaStatus;
 import com.romaincaron.data_collection.enums.MediaType;
 import jakarta.persistence.*;
@@ -66,7 +67,7 @@ public class Media {
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(
             name = "media_genres",
             joinColumns = @JoinColumn(name = "media_id"),
@@ -74,6 +75,6 @@ public class Media {
     )
     private Set<Genre> genres = new HashSet<>();
 
-    @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<MediaTag> mediaTags = new HashSet<>();
 }

@@ -15,7 +15,7 @@ public interface TagNodeRepository extends Neo4jRepository<TagNode, Long> {
     Optional<TagNode> findByNameAndSourceName(String name, String sourceName);
 
     // Find most popular tags
-    @Query("MATCH (t:Tag)<-[r:HAS_TAG]-(m:Media) " +
+    @Query("MATCH (t:TagNode)<-[r:HAS_TAG]-(m:MediaNode) " +
             "WITH t, COUNT(r) AS tagCount " +
             "RETURN t, tagCount " +
             "ORDER BY tagCount DESC LIMIT $limit")

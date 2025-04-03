@@ -1,7 +1,7 @@
-package com.romaincaron.analyze.dto;
+package com.romaincaron.data_collection.dto;
 
-import com.romaincaron.analyze.enums.MediaStatus;
-import com.romaincaron.analyze.enums.MediaType;
+import com.romaincaron.data_collection.enums.MediaStatus;
+import com.romaincaron.data_collection.enums.MediaType;
 import lombok.*;
 
 import java.time.LocalDateTime;

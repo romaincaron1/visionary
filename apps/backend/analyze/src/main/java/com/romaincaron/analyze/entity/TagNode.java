@@ -7,7 +7,7 @@ import org.springframework.data.neo4j.core.schema.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Node("Tag")
+@Node("TagNode")
 @AllArgsConstructor @NoArgsConstructor
 @Getter @Setter @Builder
 public class TagNode {

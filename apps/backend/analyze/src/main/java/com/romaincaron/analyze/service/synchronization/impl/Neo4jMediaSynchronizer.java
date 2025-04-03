@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -32,6 +33,7 @@ public class Neo4jMediaSynchronizer implements MediaSynchronizer {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public MediaNode synchronize(MediaDto mediaDto) {
         log.info("Synchronizing media: {} (ID: {})", mediaDto.getTitle(), mediaDto.getExternalId());
 

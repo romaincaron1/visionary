@@ -6,6 +6,7 @@ import com.romaincaron.data_collection.entity.MediaTag;
 import com.romaincaron.data_collection.entity.Tag;
 import com.romaincaron.data_collection.entity.embeddable.MediaTagId;
 import com.romaincaron.data_collection.repository.TagRepository;
+import com.romaincaron.data_collection.util.ConfidenceLevelEvaluator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class TagSynchronizationService {
             mediaTag.setMedia(media);
             mediaTag.setTag(tag);
             mediaTag.setRelevance(tagData.getRelevance());
+            mediaTag.setConfidenceLevel(ConfidenceLevelEvaluator.EVALUATE(mediaTag.getRelevance()));
 
             MediaTagId mediaTagId = new MediaTagId();
             mediaTagId.setMediaId(media.getId());
