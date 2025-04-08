@@ -1,4 +1,4 @@
-# Visionary - Plateforme de Recommandation Basée sur le Contenu
+# Visionary - Plateforme de Recommandation
 
 Visionary est une plateforme sophistiquée de recommandation conçue pour fournir des suggestions personnalisées pour différents types de médias (mangas, animes, films, séries) basées sur la similarité de contenu. Le système analyse les caractéristiques des médias, crée des représentations vectorielles et détermine des similarités pour délivrer des recommandations précises et explicables.
 
@@ -74,15 +74,6 @@ Similarité(A,B) = cos(θ) = (A·B)/(||A||·||B||)
 ```
 
 Cela produit une valeur entre 0 (complètement différent) et 1 (identique), qui est utilisée pour classer les recommandations.
-
-## Points d'API
-
-### Service de Collecte de Données
-- `GET /api/media/{id}` - Récupérer un média par ID
-- `GET /api/media/update/all` - Déclencher une synchronisation complète des données
-
-### Service d'Analyse
-- `GET /api/sync/{mediaId}` - Synchroniser un média spécifique vers Neo4j
 
 ## Exemple Concret de Recommandation
 
