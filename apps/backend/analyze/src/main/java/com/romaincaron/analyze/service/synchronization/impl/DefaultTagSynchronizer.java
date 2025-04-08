@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -76,7 +77,8 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
         }
     }
 
-    private TagNode findOrCreateTag(String tagName, String sourceName) {
+    @Transactional
+    protected TagNode findOrCreateTag(String tagName, String sourceName) {
         Optional<TagNode> existingTag = tagNodeService.findByNameAndSourceName(tagName, sourceName);
 
         if (existingTag.isPresent()) {

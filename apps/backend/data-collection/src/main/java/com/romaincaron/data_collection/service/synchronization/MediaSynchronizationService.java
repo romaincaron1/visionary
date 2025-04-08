@@ -5,6 +5,7 @@ import com.romaincaron.data_collection.dto.MediaDto;
 import com.romaincaron.data_collection.dto.SyncResult;
 import com.romaincaron.data_collection.entity.Media;
 import com.romaincaron.data_collection.enums.MediaType;
+import com.romaincaron.data_collection.event.MediaEventPublisher;
 import com.romaincaron.data_collection.mapper.MediaMapper;
 import com.romaincaron.data_collection.service.datasource.DataSource;
 import com.romaincaron.data_collection.service.datasource.DataSourceManager;
@@ -26,6 +27,7 @@ public class MediaSynchronizationService {
     private final MediaService mediaService;
     private final GenreSynchronizationService genreService;
     private final TagSynchronizationService tagService;
+    private final MediaEventPublisher eventPublisher;
 
     /**
      * Synchronizes all media of a specific type from all available data sources
@@ -83,21 +85,30 @@ public class MediaSynchronizationService {
      */
     @Transactional(Transactional.TxType.REQUIRED)
     public boolean syncMediaData(MediaData mediaData) {
+        boolean isNew = false;
         Optional<MediaDto> existingMediaDtoOpt = mediaService.findByExternalIdAndSourceName(
                 mediaData.getExternalId(), mediaData.getSourceName());
 
+        Media media;
         if (existingMediaDtoOpt.isPresent()) {
             MediaDto mediaDto = existingMediaDtoOpt.get();
-            Media media = mediaService.getEntityById(mediaDto.getId());
+            media = mediaService.getEntityById(mediaDto.getId());
             syncMediaProperties(media, mediaData);
-            return false; // Update
         } else {
-            Media media = new Media();
+            media = new Media();
             media.setExternalId(mediaData.getExternalId());
             media.setSourceName(mediaData.getSourceName());
-            syncMediaProperties(media, mediaData);
-            return true; // Creation
+            media = syncMediaProperties(media, mediaData);
+            isNew = true;
         }
+
+        if (isNew) {
+            eventPublisher.publishMediaCreated(media.getId());
+        } else {
+            eventPublisher.publishMediaUpdated(media.getId());
+        }
+
+        return isNew;
     }
 
     /**
