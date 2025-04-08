@@ -15,9 +15,8 @@ public class MediaMapper {
         mediaNode.setExternalId(mediaDto.getExternalId());
         mediaNode.setTitle(mediaDto.getTitle());
         mediaNode.setSourceName(mediaDto.getSourceName());
-        mediaNode.setMediaType(mediaDto.getMediaType().toString());
+        mediaNode.setMediaType(mediaDto.getMediaType());
         mediaNode.setSynopsis(mediaDto.getSynopsis());
         return mediaNode;
     }
-
 }

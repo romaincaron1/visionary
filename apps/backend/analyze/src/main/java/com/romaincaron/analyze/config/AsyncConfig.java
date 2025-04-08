@@ -10,9 +10,9 @@ public class AsyncConfig {
     @Bean
     public TaskExecutor mediaProcessingExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);         // Nombre de threads à maintenir
-        executor.setMaxPoolSize(10);         // Taille maximale du pool
-        executor.setQueueCapacity(25);       // Taille de la file d'attente avant rejet
+        executor.setCorePoolSize(10);         // Nombre de threads à maintenir
+        executor.setMaxPoolSize(20);         // Taille maximale du pool
+        executor.setQueueCapacity(100);       // Taille de la file d'attente avant rejet
         executor.setThreadNamePrefix("kafka-consumer-");
         executor.initialize();
         return executor;

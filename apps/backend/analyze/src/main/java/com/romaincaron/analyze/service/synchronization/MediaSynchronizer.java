@@ -4,6 +4,5 @@ import com.romaincaron.analyze.dto.MediaDto;
 import com.romaincaron.analyze.entity.MediaNode;
 
 public interface MediaSynchronizer {
-    MediaNode synchronize(Long mediaId);
     MediaNode synchronize(MediaDto mediaDto);
 }
