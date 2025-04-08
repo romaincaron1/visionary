@@ -8,8 +8,7 @@ import com.romaincaron.analyze.entity.relationships.TagRelationship;
 import com.romaincaron.analyze.service.entity.TagNodeService;
 import com.romaincaron.analyze.service.synchronization.TagSynchronizer;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +17,9 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class DefaultTagSynchronizer implements TagSynchronizer {
-    private static final Logger log = LoggerFactory.getLogger(DefaultTagSynchronizer.class);
 
     private final TagNodeService tagNodeService;
 

@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface GenreNodeService {
     Optional<GenreNode> findByName(String name);
     List<MediaNode> findMediaByGenre(String genreName);
+    List<GenreNode> findAll();
     GenreNode save(GenreNode genreNode);
 }

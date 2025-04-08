@@ -30,4 +30,9 @@ public class GenreNodeServiceImpl implements GenreNodeService {
     public GenreNode save(GenreNode genreNode) {
         return genreNodeRepository.save(genreNode);
     }
+
+    @Override
+    public List<GenreNode> findAll() {
+        return genreNodeRepository.findAll();
+    }
 }

@@ -24,4 +24,9 @@ public class TagNodeServiceImpl implements TagNodeService {
     public List<TagNode> findMostPopularTags(int limit) {
         return tagNodeRepository.findMostPopularTags(limit);
     }
+
+    @Override
+    public List<TagNode> findAll() {
+        return tagNodeRepository.findAll();
+    }
 }

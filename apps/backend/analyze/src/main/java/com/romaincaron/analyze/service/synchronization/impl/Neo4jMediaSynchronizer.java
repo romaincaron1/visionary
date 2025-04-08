@@ -9,17 +9,16 @@ import com.romaincaron.analyze.service.synchronization.GenreSynchronizer;
 import com.romaincaron.analyze.service.synchronization.MediaSynchronizer;
 import com.romaincaron.analyze.service.synchronization.TagSynchronizer;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class Neo4jMediaSynchronizer implements MediaSynchronizer {
-    private static final Logger log = LoggerFactory.getLogger(Neo4jMediaSynchronizer.class);
 
     private final MediaNodeService mediaNodeService;
     private final DataCollectionService dataCollectionService;

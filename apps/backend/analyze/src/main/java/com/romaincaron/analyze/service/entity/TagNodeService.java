@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface TagNodeService {
     Optional<TagNode> findByNameAndSourceName(String name, String sourceName);
     List<TagNode> findMostPopularTags(int limit);
+    List<TagNode> findAll();
 }

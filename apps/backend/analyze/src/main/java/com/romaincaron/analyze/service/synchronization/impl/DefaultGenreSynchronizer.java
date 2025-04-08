@@ -7,8 +7,7 @@ import com.romaincaron.analyze.entity.MediaNode;
 import com.romaincaron.analyze.service.entity.GenreNodeService;
 import com.romaincaron.analyze.service.synchronization.GenreSynchronizer;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +17,8 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DefaultGenreSynchronizer implements GenreSynchronizer {
-    private static final Logger log = LoggerFactory.getLogger(DefaultGenreSynchronizer.class);
 
     private final GenreNodeService genreNodeService;
 
