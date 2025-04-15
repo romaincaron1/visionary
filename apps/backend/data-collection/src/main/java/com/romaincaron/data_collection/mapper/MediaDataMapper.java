@@ -1,8 +1,9 @@
 package com.romaincaron.data_collection.mapper;
 
-import com.romaincaron.data_collection.dto.MediaData;
+import com.romaincaron.data_collection.dto.*;
 import com.romaincaron.data_collection.enums.MediaStatus;
 import com.romaincaron.data_collection.enums.MediaType;
+import com.romaincaron.data_collection.util.ConfidenceLevelEvaluator;
 
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +14,56 @@ import java.util.stream.Collectors;
 import static com.romaincaron.data_collection.service.datasource.AniListDataSource.SOURCE_NAME;
 
 public class MediaDataMapper {
+
+    /**
+     * Map a MediaData to a MediaDto
+     * @param mediaData
+     * @return
+     */
+    public static MediaDto MAP_TO_DTO(MediaData mediaData) {
+        MediaDto dto = new MediaDto();
+
+        dto.setTitle(mediaData.getTitle());
+        dto.setExternalId(mediaData.getExternalId());
+        dto.setTitleAlternative(mediaData.getTitleAlternative());
+        dto.setSynopsis(mediaData.getSynopsis());
+        dto.setMediaType(mediaData.getMediaType());
+        dto.setAuthor(mediaData.getAuthor());
+        dto.setArtist(mediaData.getArtist());
+        dto.setStartYear(mediaData.getStartYear());
+        dto.setEndYear(mediaData.getEndYear());
+        dto.setStatus(mediaData.getStatus());
+        dto.setCoverUrl(mediaData.getCoverUrl());
+        dto.setRating(mediaData.getRating());
+        dto.setPopularity(mediaData.getPopularity());
+        dto.setSourceName(mediaData.getSourceName());
+
+        Set<GenreDto> genres = new HashSet<>();
+        if (mediaData.getGenres() != null) {
+            for (String name : mediaData.getGenres()) {
+                genres.add(new GenreDto(null, name));
+            }
+        }
+        dto.setGenres(genres);
+
+        Set<MediaTagDto> mediaTags = new HashSet<>();
+        if (mediaData.getTags() != null) {
+            for (MediaData.TagData tagData : mediaData.getTags()) {
+                TagDto tagDto = new TagDto(null, tagData.getName(), mediaData.getSourceName());
+                String confidenceLevel = ConfidenceLevelEvaluator.EVALUATE(tagData.getRelevance()).name();
+                mediaTags.add(new MediaTagDto(tagDto, tagData.getRelevance(), confidenceLevel));
+            }
+        }
+        dto.setMediaTags(mediaTags);
+
+        return dto;
+    }
+
+    /**
+     * Map the Media from the API response to a MediaData object
+     * @param response
+     * @return
+     */
     public static MediaData MAP_TO_MEDIADATA(Map<String, Object> response) {
         Map<String, Object> data = (Map<String, Object>) response.get("data");
         if (data == null) {

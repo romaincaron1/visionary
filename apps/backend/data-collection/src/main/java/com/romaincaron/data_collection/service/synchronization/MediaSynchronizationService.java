@@ -4,13 +4,15 @@ import com.romaincaron.data_collection.dto.MediaData;
 import com.romaincaron.data_collection.dto.MediaDto;
 import com.romaincaron.data_collection.dto.SyncResult;
 import com.romaincaron.data_collection.entity.Media;
-import com.romaincaron.data_collection.entity.MediaTag;
 import com.romaincaron.data_collection.enums.MediaType;
 import com.romaincaron.data_collection.event.MediaEventPublisher;
+import com.romaincaron.data_collection.mapper.MediaDataMapper;
 import com.romaincaron.data_collection.mapper.MediaMapper;
+import com.romaincaron.data_collection.repository.MediaRepository;
 import com.romaincaron.data_collection.service.datasource.DataSource;
 import com.romaincaron.data_collection.service.datasource.DataSourceManager;
 import com.romaincaron.data_collection.service.entity.MediaService;
+import com.romaincaron.data_collection.util.ChecksumCalculator;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -30,6 +32,7 @@ public class MediaSynchronizationService {
     private final GenreSynchronizationService genreService;
     private final TagSynchronizationService tagService;
     private final MediaEventPublisher eventPublisher;
+    private final MediaRepository mediaRepository;
 
     /**
      * Synchronize all media by a given type
@@ -132,7 +135,6 @@ public class MediaSynchronizationService {
         throw new EntityNotFoundException("Media not found with externalId: " + externalId);
     }
 
-
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     protected boolean syncMediaInNewTransaction(MediaData mediaData, int totalCreated, int totalUpdated) {
         boolean isNew = syncSingleMediaData(mediaData);
@@ -146,13 +148,22 @@ public class MediaSynchronizationService {
     // Sync a single media based on given data and return if its updated or created
     @Transactional
     protected boolean syncSingleMediaData(MediaData mediaData) {
+        // Convert into a dto to calculate the checksum
+        MediaDto temporaryDto = MediaDataMapper.MAP_TO_DTO(mediaData);
+        String newChecksum = ChecksumCalculator.calculateFromDto(temporaryDto);
+
         Optional<MediaDto> existingMediaDtoOpt = mediaService.findByExternalIdAndSourceName(
                 mediaData.getExternalId(), mediaData.getSourceName());
 
         if (existingMediaDtoOpt.isPresent()) {
             MediaDto mediaDto = existingMediaDtoOpt.get();
-            Media media = mediaService.getEntityById(mediaDto.getId());
-            syncMediaProperties(media, mediaData);
+            if (!Objects.equals(mediaDto.getChecksum(), newChecksum)) {
+                Media media = mediaService.getEntityById(mediaDto.getId());
+                log.debug("Updating media: {}", media);
+                syncMediaProperties(media, mediaData);
+            } else {
+                log.debug("Checksum identical for media {}, skipping update", mediaDto.getId());
+            }
             return false; // Update
         } else {
             Media media = new Media();
@@ -198,14 +209,19 @@ public class MediaSynchronizationService {
             media = mediaService.getEntityById(mediaDto.getId());
 
             if (mediaData.getTags() != null && !mediaData.getTags().isEmpty()) {
-                Set<MediaTag> newTags = tagService.createMediaTags(mediaData.getTags(), media);
+                tagService.createMediaTags(mediaData.getTags(), media);
 
                 mediaDto = MediaMapper.toDto(media);
                 mediaDto = mediaService.save(mediaDto);
                 media = mediaService.getEntityById(mediaDto.getId());
             }
 
-            return media;
+            // Set checksum and update media
+            MediaDto finalDto = MediaMapper.toDto(media);
+            finalDto.setChecksum(ChecksumCalculator.calculateFromDto(finalDto));
+            finalDto = mediaService.save(finalDto);
+
+            return mediaService.getEntityById(finalDto.getId());
         } catch (Exception e) {
             log.error("Failed to save media relationships: {}", e.getMessage());
             throw e; // Re-throw to trigger transaction rollback for this specific media

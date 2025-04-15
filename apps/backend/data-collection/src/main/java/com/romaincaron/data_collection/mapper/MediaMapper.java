@@ -39,6 +39,7 @@ public class MediaMapper {
         dto.setRating(media.getRating());
         dto.setPopularity(media.getPopularity());
         dto.setSourceName(media.getSourceName());
+        dto.setChecksum(media.getChecksum());
         dto.setLastUpdated(media.getLastUpdated());
 
         // Map genres
@@ -107,6 +108,7 @@ public class MediaMapper {
         media.setRating(dto.getRating());
         media.setPopularity(dto.getPopularity());
         media.setSourceName(dto.getSourceName());
+        media.setChecksum(dto.getChecksum());
         media.setLastUpdated(dto.getLastUpdated());
 
         return media;

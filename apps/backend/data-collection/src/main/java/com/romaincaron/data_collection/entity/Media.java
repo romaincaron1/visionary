@@ -77,4 +77,6 @@ public class Media {
 
     @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<MediaTag> mediaTags = new HashSet<>();
+
+    private String checksum;
 }
