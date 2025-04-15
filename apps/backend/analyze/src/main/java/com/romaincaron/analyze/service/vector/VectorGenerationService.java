@@ -3,19 +3,24 @@ package com.romaincaron.analyze.service.vector;
 import com.romaincaron.analyze.entity.GenreNode;
 import com.romaincaron.analyze.entity.MediaNode;
 import com.romaincaron.analyze.entity.relationships.TagRelationship;
+import com.romaincaron.analyze.service.entity.MediaNodeService;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class MediaVectorService {
+public class VectorGenerationService {
 
+    private final MediaNodeService mediaNodeService;
     private final TagDictionaryService tagDictionaryService;
     private final GenreDictionaryService genreDictionaryService;
 
@@ -64,5 +69,25 @@ public class MediaVectorService {
                 mediaNode.getTitle(), totalDimension);
 
         return result;
+    }
+
+    @Transactional
+    public void generateAllVectors() {
+        log.info("Starting vector generation for all media...");
+
+        List<MediaNode> allMedia = mediaNodeService.findAll();
+
+        for (MediaNode media : allMedia) {
+            try {
+                double[] vector = generateMediaVector(media);
+
+                media.setVectorFromDoubleArray(vector);
+                mediaNodeService.save(media);
+            } catch (Exception e) {
+                log.error("Error regenerating vector for media {}: {}", media.getTitle(), e.getMessage(), e);
+            }
+        }
+
+        log.info("Vector regeneration completed.");
     }
 }

@@ -8,7 +8,6 @@ import com.romaincaron.analyze.service.entity.MediaNodeService;
 import com.romaincaron.analyze.service.synchronization.GenreSynchronizer;
 import com.romaincaron.analyze.service.synchronization.MediaSynchronizer;
 import com.romaincaron.analyze.service.synchronization.TagSynchronizer;
-import com.romaincaron.analyze.service.vector.MediaVectorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ public class Neo4jMediaSynchronizer implements MediaSynchronizer {
     private final DataCollectionService dataCollectionService;
     private final GenreSynchronizer genreSynchronizer;
     private final TagSynchronizer tagSynchronizer;
-    private final MediaVectorService mediaVectorService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -52,10 +50,6 @@ public class Neo4jMediaSynchronizer implements MediaSynchronizer {
         // Synchronize relationships
         genreSynchronizer.synchronize(mediaNode, mediaDto);
         tagSynchronizer.synchronize(mediaNode, mediaDto);
-
-        // Generate and save the vector
-        double[] vector = mediaVectorService.generateMediaVector(mediaNode);
-        mediaNode.setVectorFromDoubleArray(vector);
 
         // Save again with relationships
         return mediaNodeService.save(mediaNode);

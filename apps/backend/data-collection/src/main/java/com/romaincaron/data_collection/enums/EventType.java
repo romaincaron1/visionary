@@ -1,6 +1,7 @@
 package com.romaincaron.data_collection.enums;
 
 public enum EventType {
-    CREATED,
-    UPDATED
+    MEDIA_SYNCED,
+    BATCH_COMPLETED,
+    SYNC_COMPLETED,
 }

@@ -39,12 +39,4 @@ public class MediaController {
                 .status(HttpStatus.OK)
                 .body(mediaService.findById(id));
     }
-
-    @GetMapping("/media/update/all")
-    public ResponseEntity<SyncResult> updateAllMedia() {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(mediaSynchronizationService.syncAllMedia(MediaType.MANGA));
-    }
-
 }

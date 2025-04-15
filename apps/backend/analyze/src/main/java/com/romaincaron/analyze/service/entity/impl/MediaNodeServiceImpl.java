@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -33,6 +34,16 @@ public class MediaNodeServiceImpl implements MediaNodeService {
     @Override
     public List<MediaNode> findMediaWithSimilarTags(String externalId, String sourceName, int limit) {
         return mediaNodeRepository.findMediaWithSimilarTags(externalId, sourceName, limit);
+    }
+
+    @Override
+    public List<MediaNode> findAll() {
+        return mediaNodeRepository.findAll();
+    }
+
+    @Override
+    public Optional<MediaNode> findById(Long id) {
+        return mediaNodeRepository.findById(id);
     }
 
     public MediaNode save(MediaNode mediaNode) {

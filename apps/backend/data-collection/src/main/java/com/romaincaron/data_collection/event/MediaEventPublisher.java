@@ -1,42 +1,54 @@
 package com.romaincaron.data_collection.event;
 
 import com.romaincaron.data_collection.enums.EventType;
+import com.romaincaron.data_collection.enums.MediaType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MediaEventPublisher {
 
-    private final KafkaTemplate<String, MediaEvent> kafkaTemplate;
-    private static final String TOPIC = "media-events";
+    private final KafkaTemplate<String, MediaSyncEvent> kafkaTemplate;
 
-    /**
-     * Publish a media created event
-     * @param mediaId
-     */
-    public void publishMediaCreated(Long mediaId) {
-        MediaEvent event = new MediaEvent(
-                mediaId,
-                "CREATED",
-                System.currentTimeMillis()
+    @Value("${constants.kafka.sync-topic}")
+    private String topic;
+
+    public void notifyMediaSynced(String externalId) {
+        MediaSyncEvent event = new MediaSyncEvent(
+                EventType.MEDIA_SYNCED,
+                externalId,
+                LocalDateTime.now()
         );
-        kafkaTemplate.send(TOPIC, String.valueOf(mediaId), event);
+
+        kafkaTemplate.send(topic, event);
+        log.debug("Sent MEDIA_SYNCED event for externalId {}", externalId);
     }
 
-    /**
-     * Publish a media updated event
-     * @param mediaId
-     */
-    public void publishMediaUpdated(Long mediaId) {
-        MediaEvent event = new MediaEvent(
-                mediaId,
-                "UPDATED",
-                System.currentTimeMillis()
+    public void notifyBatchCompleted(MediaType mediaType) {
+        MediaSyncEvent event = new MediaSyncEvent(
+                EventType.BATCH_COMPLETED,
+                mediaType.name(),
+                LocalDateTime.now()
         );
-        kafkaTemplate.send(TOPIC, String.valueOf(mediaId), event);
+
+        kafkaTemplate.send(topic, event);
+        log.debug("Sent BATCH_COMPLETED event for type {}", mediaType.name());
+    }
+
+    public void notifySyncCompleted() {
+        MediaSyncEvent event = new MediaSyncEvent(
+                EventType.SYNC_COMPLETED,
+                null,
+                LocalDateTime.now()
+        );
+        kafkaTemplate.send(topic, event);
+        log.debug("Sent SYNC_COMPLETED event");
     }
 }

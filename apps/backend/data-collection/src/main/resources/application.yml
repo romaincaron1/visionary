@@ -43,3 +43,8 @@ datasources:
       url: https://graphql.anilist.co
       api-key:
       timeout: 5000
+
+# Constants
+constants:
+  kafka:
+    sync-topic: media-sync-topic
