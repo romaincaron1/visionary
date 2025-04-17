@@ -41,11 +41,11 @@ public class MediaNode {
     @Relationship(type = "HAS_TAG")
     private Set<TagRelationship> tags = new HashSet<>();
 
-    @Relationship(type = "SIMILAR_TO")
-    private Set<SimilarityRelationship> similarMedia = new HashSet<>();
-
     @Property("contentVector")
     private String contentVector;
+
+    @Property("checksum")
+    private String checksum;
 
     // Utils Methods
     public void setVectorFromDoubleArray(double[] vector) {

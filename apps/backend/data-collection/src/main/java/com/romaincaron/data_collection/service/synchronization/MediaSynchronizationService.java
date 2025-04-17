@@ -57,8 +57,7 @@ public class MediaSynchronizationService {
 
                 for (MediaData mediaData : mediaDatas) {
                     try {
-                        // Utiliser une nouvelle transaction pour chaque média
-                        boolean isNew = syncMediaInNewTransaction(mediaData, totalCreated, totalUpdated);
+                        boolean isNew = syncMediaInNewTransaction(mediaData);
                         if (isNew) totalCreated++; else totalUpdated++;
                     } catch (Exception e) {
                         log.error("Error syncing media {} : {}", mediaData.getExternalId(), e.getMessage(), e);
@@ -78,7 +77,7 @@ public class MediaSynchronizationService {
                 mediaType, totalCreated, totalUpdated, totalErrors);
 
         return new SyncResult()
-                .setSuccess(true) // Toujours considérer comme un succès global même s'il y a des erreurs individuelles
+                .setSuccess(true)
                 .setMessage(String.format("Processed %d media: %d created, %d updated, %d errors",
                         totalCreated + totalUpdated + totalErrors, totalCreated, totalUpdated, totalErrors));
     }
@@ -122,7 +121,7 @@ public class MediaSynchronizationService {
             if (mediaDataOpt.isPresent()) {
                 MediaData mediaData = mediaDataOpt.get();
                 syncSingleMediaData(mediaData);
-                eventPublisher.notifyMediaSynced(externalId);
+                eventPublisher.notifyMediaSynced(externalId, dataSource.getSourceName(), true);
 
                 MediaDto result = mediaService.findByExternalIdAndSourceName(externalId, sourceName)
                         .orElseThrow(() -> new RuntimeException("Failed to retrieve synchronized media"));
@@ -136,11 +135,11 @@ public class MediaSynchronizationService {
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    protected boolean syncMediaInNewTransaction(MediaData mediaData, int totalCreated, int totalUpdated) {
+    protected boolean syncMediaInNewTransaction(MediaData mediaData) {
         boolean isNew = syncSingleMediaData(mediaData);
 
         // Notify when media has been synced
-        eventPublisher.notifyMediaSynced(mediaData.getExternalId());
+        eventPublisher.notifyMediaSynced(mediaData.getExternalId(), mediaData.getSourceName(), false);
 
         return isNew;
     }

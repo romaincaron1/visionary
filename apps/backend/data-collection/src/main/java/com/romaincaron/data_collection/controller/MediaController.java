@@ -1,11 +1,7 @@
 package com.romaincaron.data_collection.controller;
 
-import com.romaincaron.data_collection.dto.MediaData;
 import com.romaincaron.data_collection.dto.MediaDto;
-import com.romaincaron.data_collection.dto.SyncResult;
-import com.romaincaron.data_collection.enums.MediaType;
 import com.romaincaron.data_collection.service.entity.MediaService;
-import com.romaincaron.data_collection.service.synchronization.MediaSynchronizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +14,10 @@ import java.util.List;
 public class MediaController {
 
     private final MediaService mediaService;
-    private final MediaSynchronizationService mediaSynchronizationService;
 
     @Autowired
-    public MediaController(MediaService mediaService, MediaSynchronizationService mediaSynchronizationService) {
+    public MediaController(MediaService mediaService) {
         this.mediaService = mediaService;
-        this.mediaSynchronizationService = mediaSynchronizationService;
     }
 
     @GetMapping("/media/all")
@@ -38,5 +32,16 @@ public class MediaController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(mediaService.findById(id));
+    }
+
+    @GetMapping("/media/source/{externalId}")
+    public ResponseEntity<MediaDto> getMediaByExternalIdAndSourceName(
+            @PathVariable("externalId") String externalId,
+            @RequestParam String sourceName) {
+        MediaDto mediaDto = mediaService.findByExternalIdAndSourceName(externalId, sourceName)
+                .orElseThrow(() -> new RuntimeException("Failed to retrieve synchronized media"));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(mediaDto);
     }
 }

@@ -1,6 +1,6 @@
 package com.romaincaron.analyze.config;
 
-import com.romaincaron.analyze.event.MediaEvent;
+import com.romaincaron.analyze.event.MediaSyncEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -17,8 +17,8 @@ import java.util.Map;
 public class KafkaConsumerConfig {
 
     @Bean
-    public ConsumerFactory<String, MediaEvent> mediaEventConsumerFactory() {
-        JsonDeserializer<MediaEvent> deserializer = new JsonDeserializer<>(MediaEvent.class, false);
+    public ConsumerFactory<String, MediaSyncEvent> mediaEventConsumerFactory() {
+        JsonDeserializer<MediaSyncEvent> deserializer = new JsonDeserializer<>(MediaSyncEvent.class, false);
         deserializer.setRemoveTypeHeaders(true);
         deserializer.setUseTypeMapperForKey(false);
         deserializer.addTrustedPackages("*");
@@ -33,8 +33,8 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, MediaEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, MediaEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, MediaSyncEvent> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, MediaSyncEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(mediaEventConsumerFactory());
         return factory;

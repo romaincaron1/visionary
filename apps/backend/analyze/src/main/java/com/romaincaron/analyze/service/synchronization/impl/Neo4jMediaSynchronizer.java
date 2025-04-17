@@ -3,7 +3,6 @@ package com.romaincaron.analyze.service.synchronization.impl;
 import com.romaincaron.analyze.dto.MediaDto;
 import com.romaincaron.analyze.entity.MediaNode;
 import com.romaincaron.analyze.mapper.MediaMapper;
-import com.romaincaron.analyze.service.client.DataCollectionService;
 import com.romaincaron.analyze.service.entity.MediaNodeService;
 import com.romaincaron.analyze.service.synchronization.GenreSynchronizer;
 import com.romaincaron.analyze.service.synchronization.MediaSynchronizer;
@@ -21,7 +20,6 @@ import java.util.Optional;
 public class Neo4jMediaSynchronizer implements MediaSynchronizer {
 
     private final MediaNodeService mediaNodeService;
-    private final DataCollectionService dataCollectionService;
     private final GenreSynchronizer genreSynchronizer;
     private final TagSynchronizer tagSynchronizer;
 
@@ -34,6 +32,14 @@ public class Neo4jMediaSynchronizer implements MediaSynchronizer {
         Optional<MediaNode> existingMediaOpt = mediaNodeService.findByExternalIdAndSourceName(
                 mediaDto.getExternalId(), mediaDto.getSourceName());
 
+        String checksum = mediaDto.getChecksum();
+
+        // If checksum unchanged, skip update
+        if (existingMediaOpt.isPresent() && checksum.equals(existingMediaOpt.get().getChecksum())) {
+            log.debug("Media {} unchanged, skipping Neo4j update", existingMediaOpt.get().getExternalId());
+            return existingMediaOpt.get();
+        }
+
         MediaNode mediaNode;
         if (existingMediaOpt.isPresent()) {
             mediaNode = existingMediaOpt.get();
@@ -43,6 +49,9 @@ public class Neo4jMediaSynchronizer implements MediaSynchronizer {
             log.debug("Creating new media node for: {}", mediaDto.getTitle());
             mediaNode = MediaMapper.MAP_TO_MEDIA_NODE(new MediaNode(), mediaDto);
         }
+
+        // Save checksum
+        mediaNode.setChecksum(checksum);
 
         // Save base entity first to ensure it has an ID
         mediaNode = mediaNodeService.save(mediaNode);

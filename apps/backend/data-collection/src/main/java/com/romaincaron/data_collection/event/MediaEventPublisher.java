@@ -20,11 +20,13 @@ public class MediaEventPublisher {
     @Value("${constants.kafka.sync-topic}")
     private String topic;
 
-    public void notifyMediaSynced(String externalId) {
+    public void notifyMediaSynced(String externalId, String sourceName, boolean singleUpdate) {
         MediaSyncEvent event = new MediaSyncEvent(
                 EventType.MEDIA_SYNCED,
                 externalId,
-                LocalDateTime.now()
+                sourceName,
+                LocalDateTime.now(),
+                singleUpdate
         );
 
         kafkaTemplate.send(topic, event);
@@ -35,7 +37,9 @@ public class MediaEventPublisher {
         MediaSyncEvent event = new MediaSyncEvent(
                 EventType.BATCH_COMPLETED,
                 mediaType.name(),
-                LocalDateTime.now()
+                null,
+                LocalDateTime.now(),
+                false
         );
 
         kafkaTemplate.send(topic, event);
@@ -46,7 +50,9 @@ public class MediaEventPublisher {
         MediaSyncEvent event = new MediaSyncEvent(
                 EventType.SYNC_COMPLETED,
                 null,
-                LocalDateTime.now()
+                null,
+                LocalDateTime.now(),
+                false
         );
         kafkaTemplate.send(topic, event);
         log.debug("Sent SYNC_COMPLETED event");

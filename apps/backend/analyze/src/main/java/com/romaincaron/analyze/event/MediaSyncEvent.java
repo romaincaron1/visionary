@@ -1,7 +1,9 @@
-package com.romaincaron.data_collection.event;
+package com.romaincaron.analyze.event;
 
-import com.romaincaron.data_collection.enums.EventType;
-import lombok.*;
+import com.romaincaron.analyze.enums.EventType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

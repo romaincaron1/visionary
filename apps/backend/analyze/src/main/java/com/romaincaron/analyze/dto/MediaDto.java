@@ -30,4 +30,5 @@ public class MediaDto {
     private LocalDateTime lastUpdated;
     private Set<GenreDto> genres = new HashSet<>();
     private Set<MediaTagDto> mediaTags = new HashSet<>();
+    private String checksum;
 }

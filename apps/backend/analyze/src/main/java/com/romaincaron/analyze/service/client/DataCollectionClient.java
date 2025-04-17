@@ -16,6 +16,9 @@ public interface DataCollectionClient {
     @GetMapping("/api/media/{mediaId}")
     MediaDto getMediaById(@PathVariable("mediaId") Long id);
 
+    @GetMapping("/api/media/source/{externalId}")
+    MediaDto getMediaByExternalIdAndSourceName(@PathVariable("externalId") String externalId, @RequestParam String sourceName);
+
     @GetMapping("/api/vectors/{mediaId}")
     MediaVectorDto getMediaVectorByMediaId(@PathVariable("mediaId") Long mediaId);
 
