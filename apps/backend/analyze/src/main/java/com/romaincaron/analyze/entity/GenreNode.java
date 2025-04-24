@@ -1,6 +1,7 @@
 package com.romaincaron.analyze.entity;
 
 import lombok.*;
+import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.neo4j.core.schema.*;
 
 import java.util.HashSet;
@@ -17,6 +18,7 @@ public class GenreNode {
     @Property("name")
     private String name;
 
+    @ReadOnlyProperty
     @Relationship(type = "HAS_GENRE", direction = Relationship.Direction.INCOMING)
     private Set<MediaNode> media = new HashSet<>();
 }

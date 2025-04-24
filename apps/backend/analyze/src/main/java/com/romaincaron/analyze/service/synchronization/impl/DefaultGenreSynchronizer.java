@@ -6,6 +6,7 @@ import com.romaincaron.analyze.entity.GenreNode;
 import com.romaincaron.analyze.entity.MediaNode;
 import com.romaincaron.analyze.service.entity.GenreNodeService;
 import com.romaincaron.analyze.service.synchronization.GenreSynchronizer;
+import com.romaincaron.analyze.service.vector.GenreDictionaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,49 +22,59 @@ import java.util.Set;
 public class DefaultGenreSynchronizer implements GenreSynchronizer {
 
     private final GenreNodeService genreNodeService;
+    private final GenreDictionaryService genreDictionaryService;
 
     @Override
     public void synchronize(MediaNode mediaNode, MediaDto mediaDto) {
+        Set<GenreNode> newGenres = new HashSet<>();
+
+        if (mediaDto.getGenres() != null && !mediaDto.getGenres().isEmpty()) {
+            for (GenreDto genreDto : mediaDto.getGenres()) {
+                GenreNode genreNode = findOrCreateGenre(genreDto);
+                newGenres.add(genreNode);
+            }
+        }
+
+        int removedCount = 0;
+        if (mediaNode.getGenres() != null) {
+            removedCount = mediaNode.getGenres().size();
+        }
+
         if (mediaNode.getGenres() == null) {
             mediaNode.setGenres(new HashSet<>());
+        } else {
+            Set<GenreNode> existingGenres = new HashSet<>(mediaNode.getGenres());
+            Set<GenreNode> addedGenres = new HashSet<>(newGenres);
+            addedGenres.removeAll(existingGenres);
+
+            for (GenreNode genre : addedGenres) {
+                log.info("Will add new genre '{}' to '{}'", genre.getName(), mediaNode.getTitle());
+            }
+
+            removedCount = existingGenres.size() - (newGenres.size() - addedGenres.size());
         }
 
-        Set<GenreNode> currentGenres = new HashSet<>(mediaNode.getGenres());
-        Set<GenreNode> updatedGenres = new HashSet<>();
-
-        for (GenreDto genreDto : mediaDto.getGenres()) {
-            GenreNode genreNode = findOrCreateGenre(genreDto);
-            updatedGenres.add(genreNode);
+        if (removedCount > 0) {
+            log.info("Removing {} obsolete genre relationships for {}", removedCount, mediaNode.getTitle());
         }
 
-        // Remove obsolete relationships
-        Set<GenreNode> toRemove = new HashSet<>(currentGenres);
-        toRemove.removeAll(updatedGenres);
-        if (!toRemove.isEmpty()) {
-            mediaNode.getGenres().removeAll(toRemove);
-            log.info("Removed obsoletes genre relationships for {}",
-                    mediaNode.getTitle());
-        }
-
-        // Add new relationships
-        Set<GenreNode> toAdd = new HashSet<>(updatedGenres);
-        toAdd.removeAll(currentGenres);
-        for (GenreNode genre : toAdd) {
-            mediaNode.getGenres().add(genre);
-            log.info("Added new genre '{}' to '{}'", genre.getName(), mediaNode.getTitle());
-        }
+        mediaNode.getGenres().clear();
+        mediaNode.getGenres().addAll(newGenres);
     }
 
     @Transactional
     protected GenreNode findOrCreateGenre(GenreDto genreDto) {
         Optional<GenreNode> existingGenre = genreNodeService.findByName(genreDto.getName());
 
+
         if (existingGenre.isPresent()) {
+            genreDictionaryService.updateDictionary(existingGenre.get());
             return existingGenre.get();
         } else {
             GenreNode newGenre = new GenreNode();
             newGenre.setName(genreDto.getName());
             GenreNode savedGenre = genreNodeService.save(newGenre);
+            genreDictionaryService.updateDictionary(savedGenre);
             log.info("Created new genre: {}", genreDto.getName());
             return savedGenre;
         }

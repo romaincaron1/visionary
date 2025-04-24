@@ -36,17 +36,17 @@ public class Neo4jMediaSynchronizer implements MediaSynchronizer {
 
         // If checksum unchanged, skip update
         if (existingMediaOpt.isPresent() && checksum.equals(existingMediaOpt.get().getChecksum())) {
-            log.debug("Media {} unchanged, skipping Neo4j update", existingMediaOpt.get().getExternalId());
+            log.info("Media {} unchanged, skipping Neo4j update", existingMediaOpt.get().getExternalId());
             return existingMediaOpt.get();
         }
 
         MediaNode mediaNode;
         if (existingMediaOpt.isPresent()) {
             mediaNode = existingMediaOpt.get();
-            log.debug("Updating existing media node: {}", mediaNode.getTitle());
+            log.info("Updating existing media node: {}", mediaNode.getTitle());
             mediaNode = MediaMapper.MAP_TO_MEDIA_NODE(mediaNode, mediaDto);
         } else {
-            log.debug("Creating new media node for: {}", mediaDto.getTitle());
+            log.info("Creating new media node for: {}", mediaDto.getTitle());
             mediaNode = MediaMapper.MAP_TO_MEDIA_NODE(new MediaNode(), mediaDto);
         }
 

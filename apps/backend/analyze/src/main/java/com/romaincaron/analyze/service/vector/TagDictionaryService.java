@@ -1,5 +1,6 @@
 package com.romaincaron.analyze.service.vector;
 
+import com.romaincaron.analyze.entity.TagNode;
 import com.romaincaron.analyze.service.entity.TagNodeService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,10 @@ public class TagDictionaryService {
             tagIndexMap.computeIfAbsent(tagNode.getName(), k -> nextIndex.getAndIncrement());
         });
         log.info("Tag dictionary initalized with {} tags", tagIndexMap.size());
+    }
+
+    public void updateDictionary(TagNode tagNode) {
+        tagIndexMap.computeIfAbsent(tagNode.getName(), k -> nextIndex.getAndIncrement());
     }
 
     public Map<String, Integer> getTagIndexMap() {

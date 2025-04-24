@@ -20,4 +20,6 @@ public interface TagNodeRepository extends Neo4jRepository<TagNode, Long> {
             "RETURN t, tagCount " +
             "ORDER BY tagCount DESC LIMIT $limit")
     List<TagNode> findMostPopularTags(int limit);
+
+
 }

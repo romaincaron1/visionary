@@ -1,5 +1,6 @@
 package com.romaincaron.analyze.service.vector;
 
+import com.romaincaron.analyze.entity.GenreNode;
 import com.romaincaron.analyze.service.entity.GenreNodeService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,11 @@ public class GenreDictionaryService {
             genreIndexMap.computeIfAbsent(genre.getName(), k -> nextIndex.getAndIncrement());
         });
         log.info("Genre dictionary initialized with {} genres", genreIndexMap.size());
+    }
+
+    public void updateDictionary(GenreNode genreNode) {
+        log.info("Adding genre {} to dictionary", genreNode.getName());
+        genreIndexMap.computeIfAbsent(genreNode.getName(), k -> nextIndex.getAndIncrement());
     }
 
     public Map<String, Integer> getGenreIndexMap() {

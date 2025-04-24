@@ -12,7 +12,9 @@ import java.util.Optional;
 public interface MediaNodeRepository extends Neo4jRepository<MediaNode, Long> {
 
     // Find a media by its ID and source name
-    @Query("MATCH (m:MediaNode) WHERE m.externalId = $externalId AND m.sourceName = $sourceName RETURN m LIMIT 1")
+    @Query("MATCH (m:MediaNode)-[r:HAS_TAG|HAS_GENRE]->(n) " +
+            "WHERE m.externalId = $externalId AND m.sourceName = $sourceName " +
+            "RETURN m, collect(r), collect(n) LIMIT 1")
     Optional<MediaNode> findByExternalIdAndSourceName(String externalId, String sourceName);
 
     // Find similar medias

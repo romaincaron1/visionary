@@ -5,6 +5,7 @@ import com.romaincaron.analyze.dto.MediaTagDto;
 import com.romaincaron.analyze.entity.MediaNode;
 import com.romaincaron.analyze.entity.TagNode;
 import com.romaincaron.analyze.entity.relationships.TagRelationship;
+import com.romaincaron.analyze.repositories.TagNodeRepository;
 import com.romaincaron.analyze.service.entity.TagNodeService;
 import com.romaincaron.analyze.service.synchronization.TagSynchronizer;
 import lombok.RequiredArgsConstructor;
@@ -22,58 +23,48 @@ import java.util.Set;
 public class DefaultTagSynchronizer implements TagSynchronizer {
 
     private final TagNodeService tagNodeService;
+    private final TagNodeRepository tagNodeRepository;
 
     @Override
     public void synchronize(MediaNode mediaNode, MediaDto mediaDto) {
-        if (mediaDto.getMediaTags() == null || mediaDto.getMediaTags().isEmpty()) {
-            mediaNode.getTags().clear();
-            return;
-        }
+        Set<TagRelationship> newRelationships = new HashSet<>();
 
-        Set<TagRelationship> currentRelationships = new HashSet<>(mediaNode.getTags());
-        Set<TagRelationship> updatedRelationships = new HashSet<>();
+        if (mediaDto.getMediaTags() != null && !mediaDto.getMediaTags().isEmpty()) {
+            for (MediaTagDto mediaTagDto : mediaDto.getMediaTags()) {
+                TagNode tagNode = findOrCreateTag(mediaTagDto.getTag().getName(), mediaDto.getSourceName());
 
-        for (MediaTagDto mediaTagDto : mediaDto.getMediaTags()) {
-            TagNode tagNode = findOrCreateTag(mediaTagDto.getTag().getName(), mediaDto.getSourceName());
+                Optional<TagRelationship> existingRelOpt = mediaNode.getTags().stream()
+                        .filter(rel -> rel.getTag().getId() != null
+                                && tagNode.getId() != null
+                                && rel.getTag().getId().equals(tagNode.getId()))
+                        .findFirst();
 
-            // Find if there's an existing relationship
-            Optional<TagRelationship> existingRelOpt = findExistingTagRelationship(currentRelationships, tagNode);
+                if (existingRelOpt.isPresent()) {
+                    TagRelationship rel = existingRelOpt.get();
+                    boolean changed = updateTagRelationship(rel, mediaTagDto, mediaDto.getSourceName());
 
-            if (existingRelOpt.isPresent()) {
-                // Update existing relationship
-                TagRelationship rel = existingRelOpt.get();
-                boolean changed = updateTagRelationship(rel, mediaTagDto, mediaDto.getSourceName());
+                    if (changed) {
+                        log.info("Updated tag relationship '{}' for '{}'",
+                                tagNode.getName(), mediaNode.getTitle());
+                    }
 
-                if (changed) {
-                    log.info("Updated tag relationship '{}' for '{}'",
-                            tagNode.getName(), mediaNode.getTitle());
+                    newRelationships.add(rel);
+                } else {
+                    TagRelationship newRel = createTagRelationship(tagNode, mediaTagDto);
+                    newRelationships.add(newRel);
+                    log.info("Created new tag relationship '{}' for '{}' with relevance {} and confidenceLevel {}",
+                            tagNode.getName(), mediaNode.getTitle(), mediaTagDto.getRelevance(), mediaTagDto.getConfidenceLevel());
                 }
-
-                updatedRelationships.add(rel);
-            } else {
-                // Create new relationship
-                TagRelationship newRel = createTagRelationship(tagNode, mediaTagDto);
-                updatedRelationships.add(newRel);
-                log.info("Created new tag relationship '{}' for '{}' with relevance {} and confidenceLevel {}",
-                        tagNode.getName(), mediaNode.getTitle(), mediaTagDto.getRelevance(), mediaTagDto.getConfidenceLevel());
             }
         }
 
-        // Remove obsolete relationships
-        Set<TagRelationship> toRemove = new HashSet<>(currentRelationships);
-        toRemove.removeAll(updatedRelationships);
-        if (!toRemove.isEmpty()) {
-            mediaNode.getTags().removeAll(toRemove);
-            log.info("Removed {} obsolete tag relationships for {}",
-                    toRemove.size(), mediaNode.getTitle());
+        int removedCount = mediaNode.getTags().size() - newRelationships.size();
+        if (removedCount > 0) {
+            log.info("Removing {} obsolete tag relationships for {}", removedCount, mediaNode.getTitle());
         }
 
-        // Add new relationships
-        Set<TagRelationship> toAdd = new HashSet<>(updatedRelationships);
-        toAdd.removeAll(currentRelationships);
-        for (TagRelationship rel : toAdd) {
-            mediaNode.getTags().add(rel);
-        }
+        mediaNode.getTags().clear();
+        mediaNode.getTags().addAll(newRelationships);
     }
 
     @Transactional
@@ -86,17 +77,10 @@ public class DefaultTagSynchronizer implements TagSynchronizer {
             TagNode newTag = new TagNode();
             newTag.setName(tagName);
             newTag.setSourceName(sourceName);
+            TagNode savedTag = tagNodeRepository.save(newTag);
             log.info("Created new tag: {} (source: {})", tagName, sourceName);
-            return newTag;
+            return savedTag;
         }
-    }
-
-    private Optional<TagRelationship> findExistingTagRelationship(
-            Set<TagRelationship> relationships, TagNode tagNode) {
-        return relationships.stream()
-                .filter(rel -> rel.getTag().getId() != null
-                        && rel.getTag().getId().equals(tagNode.getId()))
-                .findFirst();
     }
 
     private boolean updateTagRelationship(

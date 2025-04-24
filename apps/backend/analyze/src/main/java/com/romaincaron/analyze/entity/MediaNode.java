@@ -2,7 +2,6 @@ package com.romaincaron.analyze.entity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.romaincaron.analyze.entity.relationships.SimilarityRelationship;
 import com.romaincaron.analyze.entity.relationships.TagRelationship;
 import com.romaincaron.analyze.enums.MediaType;
 import lombok.*;
