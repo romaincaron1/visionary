@@ -1,8 +1,10 @@
 package com.romaincaron.analyze.service;
 
+import com.romaincaron.analyze.dto.MediaDto;
 import com.romaincaron.analyze.dto.MediaSimilarityResultDto;
 import com.romaincaron.analyze.dto.RecommendationResultDto;
 import com.romaincaron.analyze.entity.MediaNode;
+import com.romaincaron.analyze.mapper.MediaMapper;
 import com.romaincaron.analyze.service.entity.MediaNodeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,8 +66,10 @@ public class RecommendationService {
 
                 double combinedScore = graphResult.getSimilarity() * graphWeight + vectorSimilarity * vectorWeight;
 
+                MediaDto mediaDto = MediaMapper.MAP_TO_MEDIA_DTO(targetMedia);
+
                 RecommendationResultDto recommendation = new RecommendationResultDto(
-                        targetMedia,
+                        mediaDto,
                         combinedScore,
                         graphResult.getSimilarity(),
                         vectorSimilarity,

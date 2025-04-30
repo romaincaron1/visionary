@@ -3,9 +3,11 @@ package com.romaincaron.analyze.repositories;
 import com.romaincaron.analyze.entity.MediaNode;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -16,12 +18,6 @@ public interface MediaNodeRepository extends Neo4jRepository<MediaNode, Long> {
             "WHERE m.externalId = $externalId AND m.sourceName = $sourceName " +
             "RETURN m, collect(r), collect(n) LIMIT 1")
     Optional<MediaNode> findByExternalIdAndSourceName(String externalId, String sourceName);
-
-    // Find similar medias
-    @Query("MATCH (m:MediaNode)-[r:SIMILAR_TO]->(similar:MediaNode) " +
-            "WHERE m.externalId = $externalId AND m.sourceName = $sourceName " +
-            "RETURN similar ORDER BY r.score DESC LIMIT $limit")
-    List<MediaNode> findSimilarMedia(String externalId, String sourceName, int limit);
 
     // Find medias with similar genres
     @Query("MATCH (m:MediaNode)-[:HAS_GENRE]->(g:Genre)<-[:HAS_GENRE]-(similar:MediaNode) " +
@@ -40,4 +36,7 @@ public interface MediaNodeRepository extends Neo4jRepository<MediaNode, Long> {
             "RETURN similar, tagRelevance " +
             "ORDER BY tagRelevance DESC LIMIT $limit")
     List<MediaNode> findMediaWithSimilarTags(String externalId, String sourceName, int limit);
+
+    @Query("#{#query}")
+    Map<String, Object> executeSingleResultQuery(@Param("query") String query);
 }

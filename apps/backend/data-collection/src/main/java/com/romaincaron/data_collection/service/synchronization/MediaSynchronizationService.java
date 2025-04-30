@@ -41,13 +41,15 @@ public class MediaSynchronizationService {
      * @return
      */
     @Transactional
-    public SyncResult synchronizeMediaByType(MediaType mediaType) {
+    public SyncResult synchronizeMediaByType(MediaType mediaType, boolean limit) {
         log.info("Starting synchronization for media type: {}", mediaType);
         int totalCreated = 0;
         int totalUpdated = 0;
         int totalErrors = 0;
+        int total = 0;
 
         for (DataSource dataSource : dataSourceManager.getAvailableSources()) {
+            if (limit && total >= 100) break;
             if (!dataSource.isAvailable()) continue;
 
             try {
@@ -68,6 +70,8 @@ public class MediaSynchronizationService {
                 log.error("Error fetching {} from source {} : {}", mediaType, dataSource.getSourceName(), e.getMessage(), e);
                 totalErrors++;
             }
+
+            total += 1;
         }
 
         // Notify when synchronization is completed
@@ -93,13 +97,32 @@ public class MediaSynchronizationService {
         Map<MediaType, SyncResult> results = new HashMap<>();
 
         for (MediaType type : MediaType.values()) {
-            results.put(type, synchronizeMediaByType(type));
+            results.put(type, synchronizeMediaByType(type, false));
         }
 
         // Notify that all types has been synchronized
         eventPublisher.notifySyncCompleted();
 
         log.info("Completed synchronization for media all types ...");
+        return results;
+    }
+
+    /**
+     * Synchronize all media by their type
+     *
+     * @return Map<MediaType, SyncResult>
+     */
+    @Transactional
+    public Map<MediaType, SyncResult> synchronizeAllMediaTypesWithLimit(boolean limit) {
+        Map<MediaType, SyncResult> results = new HashMap<>();
+
+        for (MediaType type : MediaType.values()) {
+            results.put(type, synchronizeMediaByType(type, limit));
+        }
+
+        // Notify that all types has been synchronized
+        eventPublisher.notifySyncCompleted();
+
         return results;
     }
 

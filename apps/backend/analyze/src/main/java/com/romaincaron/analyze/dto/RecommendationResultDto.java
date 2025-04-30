@@ -9,7 +9,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 public class RecommendationResultDto {
-    private MediaNode media;
+    private MediaDto media;
     private double combinedScore;
     private double graphSimilarity;
     private double vectorSimilarity;

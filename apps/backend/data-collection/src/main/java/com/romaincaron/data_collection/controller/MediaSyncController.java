@@ -22,9 +22,16 @@ public class MediaSyncController {
         return ResponseEntity.ok(syncService.synchronizeAllMediaTypes());
     }
 
+    @GetMapping("/allwithlimit")
+    public ResponseEntity<Map<MediaType, SyncResult>> synchronizeAllMediaWithLimit(
+            @RequestParam boolean limit
+    ) {
+        return ResponseEntity.ok(syncService.synchronizeAllMediaTypesWithLimit(limit));
+    }
+
     @GetMapping("/type/{mediaType}")
     public ResponseEntity<SyncResult> synchronizeMediaByType(@PathVariable MediaType mediaType) {
-        return ResponseEntity.ok(syncService.synchronizeMediaByType(mediaType));
+        return ResponseEntity.ok(syncService.synchronizeMediaByType(mediaType, false));
     }
 
     @GetMapping("/media/{externalId}")
