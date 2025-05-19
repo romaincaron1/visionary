@@ -6,7 +6,6 @@ import com.romaincaron.analyze.entity.GenreNode;
 import com.romaincaron.analyze.entity.MediaNode;
 import com.romaincaron.analyze.service.entity.GenreNodeService;
 import com.romaincaron.analyze.service.synchronization.GenreSynchronizer;
-import com.romaincaron.analyze.service.vector.GenreDictionaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import java.util.Set;
 public class DefaultGenreSynchronizer implements GenreSynchronizer {
 
     private final GenreNodeService genreNodeService;
-    private final GenreDictionaryService genreDictionaryService;
 
     @Override
     public void synchronize(MediaNode mediaNode, MediaDto mediaDto) {
@@ -47,14 +45,16 @@ public class DefaultGenreSynchronizer implements GenreSynchronizer {
             Set<GenreNode> addedGenres = new HashSet<>(newGenres);
             addedGenres.removeAll(existingGenres);
 
-            for (GenreNode genre : addedGenres) {
-                log.info("Will add new genre '{}' to '{}'", genre.getName(), mediaNode.getTitle());
+            if (log.isInfoEnabled()) {
+                for (GenreNode genre : addedGenres) {
+                    log.info("Will add new genre '{}' to '{}'", genre.getName(), mediaNode.getTitle());
+                }
             }
 
             removedCount = existingGenres.size() - (newGenres.size() - addedGenres.size());
         }
 
-        if (removedCount > 0) {
+        if (removedCount > 0 && log.isInfoEnabled()) {
             log.info("Removing {} obsolete genre relationships for {}", removedCount, mediaNode.getTitle());
         }
 
@@ -66,16 +66,15 @@ public class DefaultGenreSynchronizer implements GenreSynchronizer {
     protected GenreNode findOrCreateGenre(GenreDto genreDto) {
         Optional<GenreNode> existingGenre = genreNodeService.findByName(genreDto.getName());
 
-
         if (existingGenre.isPresent()) {
-            genreDictionaryService.updateDictionary(existingGenre.get());
             return existingGenre.get();
         } else {
             GenreNode newGenre = new GenreNode();
             newGenre.setName(genreDto.getName());
             GenreNode savedGenre = genreNodeService.save(newGenre);
-            genreDictionaryService.updateDictionary(savedGenre);
-            log.info("Created new genre: {}", genreDto.getName());
+            if (log.isInfoEnabled()) {
+                log.info("Created new genre: {}", genreDto.getName());
+            }
             return savedGenre;
         }
     }

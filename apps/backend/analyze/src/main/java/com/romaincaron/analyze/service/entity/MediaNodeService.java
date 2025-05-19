@@ -18,4 +18,5 @@ public interface MediaNodeService {
     Page<MediaNode> findAllPaginated(Pageable pageable);
     Map<String, Object> getVectorStats();
     List<Map<String, String>> findAllMediaIdentifiers(int skip, int limit);
+    Optional<MediaNode> findByExternalId(String externalId);
 }

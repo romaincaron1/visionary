@@ -37,10 +37,10 @@ public class TagSynchronizationService {
             throw new IllegalArgumentException("Media must be persisted before creating MediaTags");
         }
 
-        // Important: Supprimez d'abord tous les tags existants via le repository
+        // Delete former tags
         mediaTagRepository.deleteAllByMediaId(media.getId());
 
-        // Puis créez les nouveaux tags
+        // Create new tags
         Set<MediaTag> mediaTags = new HashSet<>();
 
         if (tagDataList == null || tagDataList.isEmpty()) {
@@ -65,7 +65,6 @@ public class TagSynchronizationService {
             mediaTagId.setTagId(tag.getId());
             mediaTag.setId(mediaTagId);
 
-            // Sauvegarder directement le MediaTag
             mediaTag = mediaTagRepository.save(mediaTag);
 
             mediaTags.add(mediaTag);

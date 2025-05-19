@@ -153,18 +153,17 @@ public class AniListDataSource implements DataSource {
 
         return mediaItems.stream()
                 .map(mediaItem -> {
-                    // Transformer en structure attendue par MediaDataMapper
                     Map<String, Object> mediaResponse = new HashMap<>();
                     Map<String, Object> mediaContainer = new HashMap<>();
 
-                    // Convertir la liste des genres en Set si nécessaire
+                    // Transform into Genre List in a Set if necessary
                     if (mediaItem.containsKey("genres") && mediaItem.get("genres") instanceof List) {
                         List<String> genresList = (List<String>) mediaItem.get("genres");
                         Set<String> genresSet = new HashSet<>(genresList);
                         mediaItem.put("genres", genresSet);
                     }
 
-                    // Convertir la liste des tags en Set si nécessaire
+                    // Transform into Tag List in a Set if necessary
                     if (mediaItem.containsKey("tags") && mediaItem.get("tags") instanceof List) {
                         List<Map<String, Object>> tagsList = (List<Map<String, Object>>) mediaItem.get("tags");
                         Set<Map<String, Object>> tagsSet = new HashSet<>(tagsList);

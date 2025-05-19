@@ -17,23 +17,19 @@ public class MediaSyncController {
 
     private final MediaSynchronizationService syncService;
 
+    // Sync all medias
     @GetMapping("/all")
     public ResponseEntity<Map<MediaType, SyncResult>> synchronizeAllMedia() {
         return ResponseEntity.ok(syncService.synchronizeAllMediaTypes());
     }
 
-    @GetMapping("/allwithlimit")
-    public ResponseEntity<Map<MediaType, SyncResult>> synchronizeAllMediaWithLimit(
-            @RequestParam boolean limit
-    ) {
-        return ResponseEntity.ok(syncService.synchronizeAllMediaTypesWithLimit(limit));
-    }
-
+    // Sync all media in one type
     @GetMapping("/type/{mediaType}")
     public ResponseEntity<SyncResult> synchronizeMediaByType(@PathVariable MediaType mediaType) {
-        return ResponseEntity.ok(syncService.synchronizeMediaByType(mediaType, false));
+        return ResponseEntity.ok(syncService.synchronizeMediaByType(mediaType));
     }
 
+    // Sync a single media by its externalId, sourceName and media type
     @GetMapping("/media/{externalId}")
     public ResponseEntity<MediaDto> synchronizeMedia(
             @PathVariable String externalId,

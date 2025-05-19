@@ -41,15 +41,13 @@ public class MediaSynchronizationService {
      * @return
      */
     @Transactional
-    public SyncResult synchronizeMediaByType(MediaType mediaType, boolean limit) {
+    public SyncResult synchronizeMediaByType(MediaType mediaType) {
         log.info("Starting synchronization for media type: {}", mediaType);
         int totalCreated = 0;
         int totalUpdated = 0;
         int totalErrors = 0;
-        int total = 0;
 
         for (DataSource dataSource : dataSourceManager.getAvailableSources()) {
-            if (limit && total >= 100) break;
             if (!dataSource.isAvailable()) continue;
 
             try {
@@ -70,8 +68,6 @@ public class MediaSynchronizationService {
                 log.error("Error fetching {} from source {} : {}", mediaType, dataSource.getSourceName(), e.getMessage(), e);
                 totalErrors++;
             }
-
-            total += 1;
         }
 
         // Notify when synchronization is completed
@@ -97,7 +93,7 @@ public class MediaSynchronizationService {
         Map<MediaType, SyncResult> results = new HashMap<>();
 
         for (MediaType type : MediaType.values()) {
-            results.put(type, synchronizeMediaByType(type, false));
+            results.put(type, synchronizeMediaByType(type));
         }
 
         // Notify that all types has been synchronized
@@ -117,7 +113,7 @@ public class MediaSynchronizationService {
         Map<MediaType, SyncResult> results = new HashMap<>();
 
         for (MediaType type : MediaType.values()) {
-            results.put(type, synchronizeMediaByType(type, limit));
+            results.put(type, synchronizeMediaByType(type));
         }
 
         // Notify that all types has been synchronized

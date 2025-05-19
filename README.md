@@ -13,7 +13,7 @@ Built on a modern microservices architecture:
 
 ## Core Technologies
 
-- Spring Boot 3.4.x
+- Spring Boot 3.4
 - Spring Cloud
 - Neo4j (graph database)
 - PostgreSQL

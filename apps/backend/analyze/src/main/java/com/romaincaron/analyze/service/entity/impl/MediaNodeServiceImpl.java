@@ -1,7 +1,7 @@
 package com.romaincaron.analyze.service.entity.impl;
 
 import com.romaincaron.analyze.entity.MediaNode;
-import com.romaincaron.analyze.repositories.MediaNodeRepository;
+import com.romaincaron.analyze.repository.MediaNodeRepository;
 import com.romaincaron.analyze.service.entity.MediaNodeService;
 import lombok.AllArgsConstructor;
 import org.neo4j.driver.types.Type;
@@ -60,7 +60,6 @@ public class MediaNodeServiceImpl implements MediaNodeService {
         Map<String, Object> result = new HashMap<>();
 
         try (Session session = neo4jDriver.session()) {
-            // Exécuter la requête directement avec le driver Neo4j
             String query = "MATCH (m:MediaNode) " +
                     "WITH size(m.contentVector) AS vectorSize " +
                     "RETURN min(vectorSize) AS minSize, " +
@@ -121,5 +120,10 @@ public class MediaNodeServiceImpl implements MediaNodeService {
 
             return mediaIdentifiers;
         }
+    }
+
+    @Override
+    public Optional<MediaNode> findByExternalId(String externalId) {
+        return mediaNodeRepository.findByExternalId(externalId);
     }
 }

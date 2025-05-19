@@ -3,54 +3,54 @@ package com.romaincaron.analyze.utils;
 public class CypherQueries {
 
     /**
-     * Find similar media
+     * Trouve les médias similaires de manière optimisée
      */
-    public static final String FIND_SIMILAR_MEDIA =
-            "MATCH (source:MediaNode) WHERE source.externalId = $mediaId AND source.sourceName = $sourceName " +
-                    "MATCH (other:MediaNode) WHERE other.externalId <> $mediaId OR other.sourceName <> $sourceName " +
-
-                    "OPTIONAL MATCH (source)-[:HAS_GENRE]->(g:GenreNode)<-[:HAS_GENRE]-(other) " +
-                    "WITH source, other, count(g) AS commonGenres " +
-
-                    "MATCH (source)-[:HAS_GENRE]->(g1:GenreNode) " +
-                    "WITH source, other, commonGenres, count(g1) AS genres1 " +
-                    "MATCH (other)-[:HAS_GENRE]->(g2:GenreNode) " +
-                    "WITH source, other, commonGenres, genres1, count(g2) AS genres2 " +
-
-                    "OPTIONAL MATCH (source)-[r1:HAS_TAG]->(t:TagNode)<-[r2:HAS_TAG]-(other) " +
-                    "WITH source, other, commonGenres, genres1, genres2, " +
-                    "COLLECT({tag: t.name, relevance1: r1.relevance, relevance2: r2.relevance}) AS commonTags " +
-
-                    "MATCH (source)-[:HAS_TAG]->(t1:TagNode) " +
-                    "WITH source, other, commonGenres, genres1, genres2, commonTags, count(t1) AS tags1 " +
-                    "MATCH (other)-[:HAS_TAG]->(t2:TagNode) " +
-                    "WITH other, commonGenres, genres1, genres2, commonTags, tags1, count(t2) AS tags2 " +
-
-                    "WITH other, " +
-                    "CASE WHEN (genres1 + genres2 - commonGenres) > 0 " +
-                    "THEN 1.0 * commonGenres / (genres1 + genres2 - commonGenres) " +
-                    "ELSE 0 " +
-                    "END AS genreSimilarity, " +
-
-                    "CASE WHEN (tags1 + tags2) > 0 " +
-                    "THEN REDUCE(s = 0.0, t IN commonTags | s + (t.relevance1 * t.relevance2) / 10000.0) / (tags1 + tags2) * 2 " +
-                    "ELSE 0 " +
-                    "END AS tagSimilarity, " +
-
-                    "size(commonTags) AS commonTagCount, " +
-                    "commonGenres, commonTags " +
-
-                    "WITH other, " +
-                    "tagSimilarity * 0.7 + genreSimilarity * 0.3 AS similarity, " +
-                    "commonGenres, genreSimilarity, commonTagCount, tagSimilarity, commonTags " +
-
-                    "WHERE similarity > 0.1 " +
-
-                    "RETURN other.externalId AS mediaId, other.sourceName AS sourceName, " +
-                    "other.title AS title, other.mediaType AS mediaType, " +
-                    "similarity, commonGenres, genreSimilarity, commonTagCount, tagSimilarity, " +
-                    "[t IN commonTags | t.tag] AS commonTagNames " +
-                    "ORDER BY similarity DESC " +
-                    "LIMIT $limit";
-
+    public static final String FIND_SIMILAR_MEDIA = """
+        // Match initial avec le média source et collecte des tags/genres en une seule passe
+        MATCH (m:MediaNode {externalId: $externalId})
+        CALL {
+            WITH m
+            MATCH (m)-[:HAS_TAG]->(t:TagNode)
+            WITH t, COUNT {
+                MATCH ()-[:HAS_TAG]->(t)
+            } as usage
+            WHERE 15 <= usage <= 50
+            RETURN collect(t) as relevantTags
+        }
+        WITH m, relevantTags
+        MATCH (m)-[:HAS_GENRE]->(g:GenreNode)
+        WITH m, relevantTags, collect(g) as genres
+        WHERE size(relevantTags) >= 2 AND size(genres) >= 1
+        
+        // Recherche rapide des candidats potentiels
+        MATCH (m2:MediaNode)
+        WHERE m2 <> m 
+        AND ($mediaType IS NULL OR m2.mediaType = $mediaType)
+        WITH m2, relevantTags, genres
+        LIMIT 200
+        
+        // Calcul optimisé des scores avec filtrage précoce
+        MATCH (m2)-[:HAS_TAG]->(t:TagNode)
+        WHERE t IN relevantTags
+        WITH m2, relevantTags, genres, count(t) as tagMatches
+        WHERE tagMatches >= 2
+        
+        // Calcul final du score avec les genres
+        MATCH (m2)-[:HAS_GENRE]->(g:GenreNode)
+        WHERE g IN genres
+        WITH m2, 
+             tagMatches * 0.7 + count(g) * 0.3 as score,
+             tagMatches as commonTagCount,
+             count(g) as commonGenreCount
+        WHERE score >= 1.5
+        
+        RETURN m2.externalId as mediaId,
+               m2.title as title,
+               m2.mediaType as mediaType,
+               score as similarity,
+               commonGenreCount,
+               commonTagCount
+        ORDER BY score DESC
+        LIMIT $limit
+        """;
 }

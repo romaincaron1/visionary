@@ -20,6 +20,12 @@ public class MediaEventPublisher {
     @Value("${constants.kafka.sync-topic}")
     private String topic;
 
+    /**
+     * Notify when a media is synced
+     * @param externalId
+     * @param sourceName
+     * @param singleUpdate
+     */
     public void notifyMediaSynced(String externalId, String sourceName, boolean singleUpdate) {
         MediaSyncEvent event = new MediaSyncEvent(
                 EventType.MEDIA_SYNCED,
@@ -33,6 +39,10 @@ public class MediaEventPublisher {
         log.debug("Sent MEDIA_SYNCED event for externalId {}", externalId);
     }
 
+    /**
+     * Notify when a batch is completed
+     * @param mediaType
+     */
     public void notifyBatchCompleted(MediaType mediaType) {
         MediaSyncEvent event = new MediaSyncEvent(
                 EventType.BATCH_COMPLETED,
@@ -46,6 +56,7 @@ public class MediaEventPublisher {
         log.debug("Sent BATCH_COMPLETED event for type {}", mediaType.name());
     }
 
+    // Notify when the synchronization is completed
     public void notifySyncCompleted() {
         MediaSyncEvent event = new MediaSyncEvent(
                 EventType.SYNC_COMPLETED,
